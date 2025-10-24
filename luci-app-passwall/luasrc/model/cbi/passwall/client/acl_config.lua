@@ -415,7 +415,7 @@ if has_singbox or has_xray then
 end
 
 o = s:option(ListValue, "chinadns_ng_default_tag", translate("Default DNS"))
-o.default = "none"
+o.default = "gfw"
 o:value("gfw", translate("Remote DNS"))
 o:value("chn", translate("Direct DNS"))
 o:value("none", translate("Smart, Do not accept no-ip reply from Direct DNS"))
