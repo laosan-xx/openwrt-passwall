@@ -78,7 +78,7 @@ table .cbi-button-down {
 	});
 
 	//节点列表添加拖拽排序
-	(function () {
+	document.addEventListener("DOMContentLoaded", function () {
 		function initSortableForTable() {
 			var section = document.getElementById("cbi-<%=api.appname%>-haproxy_config");
 			if (!section) return;
@@ -193,12 +193,12 @@ table .cbi-button-down {
 
 				last = count;
 				if (stable >= THRESHOLD)
-					initSortableForTable();
+					setTimeout(initSortableForTable, 200);
 				else
 					requestAnimationFrame(tick);
 			}
 			tick();
 		})();
-	})();
+	});
 	//]]>
 </script>
