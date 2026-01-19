@@ -23,7 +23,7 @@ jobs:
           git config --global user.name 'laosan-xx'
           git config --global user.email 'xxhy1989@gmail.com'
           git pull --unshallow
-          git remote add upstream https://github.com/xiaorouji/openwrt-passwall.git
+          git remote add upstream https://github.com/Openwrt-Passwall/openwrt-passwall.git
           git fetch upstream
           git checkout main
           git merge --no-edit upstream/main
