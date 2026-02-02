@@ -6,6 +6,8 @@ local jsonc = api.jsonc
 local appname = "passwall"
 local fs = api.fs
 
+local xray_version = api.get_app_version("xray")
+
 local function get_noise_packets()
 	local noises = {}
 	uci:foreach(appname, "xray_noise_packets", function(n)
@@ -149,9 +151,9 @@ function gen_outbound(flag, node, tag, proxy_table)
 				security = node.stream_security,
 				tlsSettings = (node.stream_security == "tls") and {
 					serverName = node.tls_serverName,
-					allowInsecure = (node.tls_allowInsecure == "1") and true or false,
+					allowInsecure = (api.compare_versions(xray_version, "<", "26.1.31") and node.tls_allowInsecure == "1") and true or nil,
 					fingerprint = (node.type == "Xray" and node.utls == "1" and node.fingerprint and node.fingerprint ~= "") and node.fingerprint or nil,
-					pinnedPeerCertificateChainSha256 = node.tls_chain_fingerprint and { node.tls_chain_fingerprint } or nil,
+					pinnedPeerCertSha256 = node.tls_chain_fingerprint or nil,
 					echConfigList = (node.ech == "1") and node.ech_config or nil,
 					echForceQuery = (node.ech == "1") and (node.ech_ForceQuery or "none") or nil
 				} or nil,
@@ -614,42 +616,42 @@ function gen_config_server(node)
 end
 
 function gen_config(var)
-	local flag = var["-flag"]
-	local node_id = var["-node"]
-	local server_host = var["-server_host"]
-	local server_port = var["-server_port"]
-	local tcp_proxy_way = var["-tcp_proxy_way"] or "redirect"
-	local tcp_redir_port = var["-tcp_redir_port"]
-	local udp_redir_port = var["-udp_redir_port"]
-	local local_socks_address = var["-local_socks_address"] or "0.0.0.0"
-	local local_socks_port = var["-local_socks_port"]
-	local local_socks_username = var["-local_socks_username"]
-	local local_socks_password = var["-local_socks_password"]
-	local local_http_address = var["-local_http_address"] or "0.0.0.0"
-	local local_http_port = var["-local_http_port"]
-	local local_http_username = var["-local_http_username"]
-	local local_http_password = var["-local_http_password"]
-	local dns_listen_port = var["-dns_listen_port"]
-	local dns_cache = var["-dns_cache"]
-	local direct_dns_port = var["-direct_dns_port"]
-	local direct_dns_udp_server = var["-direct_dns_udp_server"]
-	local direct_dns_tcp_server = var["-direct_dns_tcp_server"]
-	local direct_dns_query_strategy = var["-direct_dns_query_strategy"]
-	local remote_dns_udp_server = var["-remote_dns_udp_server"]
-	local remote_dns_udp_port = var["-remote_dns_udp_port"]
-	local remote_dns_tcp_server = var["-remote_dns_tcp_server"]
-	local remote_dns_tcp_port = var["-remote_dns_tcp_port"]
-	local remote_dns_doh_url = var["-remote_dns_doh_url"]
-	local remote_dns_doh_host = var["-remote_dns_doh_host"]
-	local remote_dns_doh_ip = var["-remote_dns_doh_ip"]
-	local remote_dns_doh_port = var["-remote_dns_doh_port"]
-	local remote_dns_client_ip = var["-remote_dns_client_ip"]
-	local remote_dns_fake = var["-remote_dns_fake"]
-	local remote_dns_query_strategy = var["-remote_dns_query_strategy"]
-	local dns_socks_address = var["-dns_socks_address"]
-	local dns_socks_port = var["-dns_socks_port"]
-	local loglevel = var["-loglevel"] or "warning"
-	local no_run = var["-no_run"]
+	local flag = var["flag"]
+	local node_id = var["node"]
+	local server_host = var["server_host"]
+	local server_port = var["server_port"]
+	local tcp_proxy_way = var["tcp_proxy_way"] or "redirect"
+	local tcp_redir_port = var["tcp_redir_port"]
+	local udp_redir_port = var["udp_redir_port"]
+	local local_socks_address = var["local_socks_address"] or "0.0.0.0"
+	local local_socks_port = var["local_socks_port"]
+	local local_socks_username = var["local_socks_username"]
+	local local_socks_password = var["local_socks_password"]
+	local local_http_address = var["local_http_address"] or "0.0.0.0"
+	local local_http_port = var["local_http_port"]
+	local local_http_username = var["local_http_username"]
+	local local_http_password = var["local_http_password"]
+	local dns_listen_port = var["dns_listen_port"]
+	local dns_cache = var["dns_cache"]
+	local direct_dns_port = var["direct_dns_port"]
+	local direct_dns_udp_server = var["direct_dns_udp_server"]
+	local direct_dns_tcp_server = var["direct_dns_tcp_server"]
+	local direct_dns_query_strategy = var["direct_dns_query_strategy"]
+	local remote_dns_udp_server = var["remote_dns_udp_server"]
+	local remote_dns_udp_port = var["remote_dns_udp_port"]
+	local remote_dns_tcp_server = var["remote_dns_tcp_server"]
+	local remote_dns_tcp_port = var["remote_dns_tcp_port"]
+	local remote_dns_doh_url = var["remote_dns_doh_url"]
+	local remote_dns_doh_host = var["remote_dns_doh_host"]
+	local remote_dns_doh_ip = var["remote_dns_doh_ip"]
+	local remote_dns_doh_port = var["remote_dns_doh_port"]
+	local remote_dns_client_ip = var["remote_dns_client_ip"]
+	local remote_dns_fake = var["remote_dns_fake"]
+	local remote_dns_query_strategy = var["remote_dns_query_strategy"]
+	local dns_socks_address = var["dns_socks_address"]
+	local dns_socks_port = var["dns_socks_port"]
+	local loglevel = var["loglevel"] or "warning"
+	local no_run = var["no_run"]
 
 	local dns_domain_rules = {}
 	local dns = nil
@@ -717,50 +719,6 @@ function gen_config(var)
 				}
 			end
 			table.insert(inbounds, inbound)
-		end
-
-		if tcp_redir_port or udp_redir_port then
-			local inbound = {
-				protocol = "dokodemo-door",
-				settings = {network = "tcp,udp", followRedirect = true},
-				streamSettings = {sockopt = {tproxy = "tproxy"}},
-				sniffing = {
-					enabled = xray_settings.sniffing_override_dest == "1" or node.protocol == "_shunt"
-				}
-			}
-			if inbound.sniffing.enabled == true then
-				inbound.sniffing.destOverride = {"http", "tls", "quic"}
-				inbound.sniffing.metadataOnly = false
-				inbound.sniffing.routeOnly = xray_settings.sniffing_override_dest ~= "1" or nil
-				inbound.sniffing.domainsExcluded = xray_settings.sniffing_override_dest == "1" and get_domain_excluded() or nil
-			end
-			if remote_dns_fake then
-				inbound.sniffing.enabled = true
-				if not inbound.sniffing.destOverride then
-					inbound.sniffing.destOverride = {"fakedns"}
-					inbound.sniffing.metadataOnly = true
-				else
-					table.insert(inbound.sniffing.destOverride, "fakedns")
-					inbound.sniffing.metadataOnly = false
-				end
-			end
-
-			if tcp_redir_port then
-				local tcp_inbound = api.clone(inbound)
-				tcp_inbound.tag = "tcp_redir"
-				tcp_inbound.settings.network = "tcp"
-				tcp_inbound.port = tonumber(tcp_redir_port)
-				tcp_inbound.streamSettings.sockopt.tproxy = tcp_proxy_way
-				table.insert(inbounds, tcp_inbound)
-			end
-
-			if udp_redir_port then
-				local udp_inbound = api.clone(inbound)
-				udp_inbound.tag = "udp_redir"
-				udp_inbound.settings.network = "udp"
-				udp_inbound.port = tonumber(udp_redir_port)
-				table.insert(inbounds, udp_inbound)
-			end
 		end
 
 		local function gen_loopback(outbound_tag, loopback_dst)
@@ -981,6 +939,8 @@ function gen_config(var)
 			local preproxy_outbound_tag, preproxy_balancer_tag
 			local preproxy_nodes
 
+			inner_fakedns = node.fakedns or "0"
+
 			local function gen_shunt_node(rule_name, _node_id)
 				if not rule_name then return nil, nil end
 				if not _node_id then
@@ -1181,6 +1141,7 @@ function gen_config(var)
 							outboundTag = outbound_tag,
 							balancerTag = balancer_tag,
 							domain = {},
+							fakedns = nil,
 						}
 						domains = {}
 						string.gsub(e.domain_list, '[^' .. "\r\n" .. ']+', function(w)
@@ -1189,6 +1150,9 @@ function gen_config(var)
 							table.insert(domains, w)
 							table.insert(domain_table.domain, w)
 						end)
+						if inner_fakedns == "1" and node[e[".name"] .. "_fakedns"] == "1" and #domains > 0 then
+							domain_table.fakedns = true
+						end
 						if outbound_tag or balancer_tag then
 							table.insert(dns_domain_rules, api.clone(domain_table))
 						end
@@ -1218,7 +1182,7 @@ function gen_config(var)
 						balancerTag = balancer_tag,
 						network = e["network"] or "tcp,udp",
 						source = source,
-						sourcePort = e["sourcePort"] ~= "" and e["sourcePort"] or nil,
+						--sourcePort = e["sourcePort"] ~= "" and e["sourcePort"] or nil,
 						port = e["port"] ~= "" and e["port"] or nil,
 						protocol = protocols
 					}
@@ -1310,6 +1274,50 @@ function gen_config(var)
 				network = "tcp,udp"
 			})
 		end
+
+		if tcp_redir_port or udp_redir_port then
+			local inbound = {
+				protocol = "dokodemo-door",
+				settings = {network = "tcp,udp", followRedirect = true},
+				streamSettings = {sockopt = {tproxy = "tproxy"}},
+				sniffing = {
+					enabled = xray_settings.sniffing_override_dest == "1" or node.protocol == "_shunt"
+				}
+			}
+			if inbound.sniffing.enabled == true then
+				inbound.sniffing.destOverride = {"http", "tls", "quic"}
+				inbound.sniffing.metadataOnly = false
+				inbound.sniffing.routeOnly = xray_settings.sniffing_override_dest ~= "1" or nil
+				inbound.sniffing.domainsExcluded = xray_settings.sniffing_override_dest == "1" and get_domain_excluded() or nil
+			end
+			if remote_dns_fake or inner_fakedns == "1" then
+				inbound.sniffing.enabled = true
+				if not inbound.sniffing.destOverride then
+					inbound.sniffing.destOverride = {"fakedns"}
+					inbound.sniffing.metadataOnly = true
+				else
+					table.insert(inbound.sniffing.destOverride, "fakedns")
+					inbound.sniffing.metadataOnly = false
+				end
+			end
+
+			if tcp_redir_port then
+				local tcp_inbound = api.clone(inbound)
+				tcp_inbound.tag = "tcp_redir"
+				tcp_inbound.settings.network = "tcp"
+				tcp_inbound.port = tonumber(tcp_redir_port)
+				tcp_inbound.streamSettings.sockopt.tproxy = tcp_proxy_way
+				table.insert(inbounds, tcp_inbound)
+			end
+
+			if udp_redir_port then
+				local udp_inbound = api.clone(inbound)
+				udp_inbound.tag = "udp_redir"
+				udp_inbound.settings.network = "udp"
+				udp_inbound.port = tonumber(udp_redir_port)
+				table.insert(inbounds, udp_inbound)
+			end
+		end
 	end
 
 	if (remote_dns_udp_server and remote_dns_udp_port) or (remote_dns_tcp_server and remote_dns_tcp_port) then
@@ -1392,7 +1400,7 @@ function gen_config(var)
 			address = "fakedns",
 		}
 
-		if remote_dns_fake then
+		if remote_dns_fake or inner_fakedns == "1" then
 			fakedns = {}
 			local fakedns4 = {
 				ipPool = "198.18.0.0/15",
@@ -1410,7 +1418,9 @@ function gen_config(var)
 			elseif remote_dns_query_strategy == "UseIPv6" then
 				table.insert(fakedns, fakedns6)
 			end
-			table.insert(dns.servers, 1, _remote_fakedns)
+			if remote_dns_fake and inner_fakedns == "0" then
+				table.insert(dns.servers, 1, _remote_fakedns)
+			end
 		end
 
 		local dns_outbound_tag = "direct"
@@ -1500,7 +1510,7 @@ function gen_config(var)
 					if value.outboundTag == "direct" and _direct_dns.address then
 						dns_server = api.clone(_direct_dns)
 					else
-						if remote_dns_fake then
+						if value.fakedns then
 							dns_server = api.clone(_remote_fakedns)
 						else
 							dns_server = api.clone(_remote_dns)
@@ -1678,19 +1688,19 @@ function gen_config(var)
 end
 
 function gen_proto_config(var)
-	local local_socks_address = var["-local_socks_address"] or "0.0.0.0"
-	local local_socks_port = var["-local_socks_port"]
-	local local_socks_username = var["-local_socks_username"]
-	local local_socks_password = var["-local_socks_password"]
-	local local_http_address = var["-local_http_address"] or "0.0.0.0"
-	local local_http_port = var["-local_http_port"]
-	local local_http_username = var["-local_http_username"]
-	local local_http_password = var["-local_http_password"]
-	local server_proto = var["-server_proto"]
-	local server_address = var["-server_address"]
-	local server_port = var["-server_port"]
-	local server_username = var["-server_username"]
-	local server_password = var["-server_password"]
+	local local_socks_address = var["local_socks_address"] or "0.0.0.0"
+	local local_socks_port = var["local_socks_port"]
+	local local_socks_username = var["local_socks_username"]
+	local local_socks_password = var["local_socks_password"]
+	local local_http_address = var["local_http_address"] or "0.0.0.0"
+	local local_http_port = var["local_http_port"]
+	local local_http_username = var["local_http_username"]
+	local local_http_password = var["local_http_password"]
+	local server_proto = var["server_proto"]
+	local server_address = var["server_address"]
+	local server_port = var["server_port"]
+	local server_username = var["server_username"]
+	local server_password = var["server_password"]
 
 	local inbounds = {}
 	local outbounds = {}
@@ -1788,6 +1798,10 @@ _G.gen_proto_config = gen_proto_config
 if arg[1] then
 	local func =_G[arg[1]]
 	if func then
-		print(func(api.get_function_args(arg)))
+		local var = nil
+		if arg[2] then
+			var = jsonc.parse(arg[2])
+		end
+		print(func(var))
 	end
 end

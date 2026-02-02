@@ -65,18 +65,14 @@ get_geoip() {
 	local geoip_code="$1"
 	local geoip_type_flag=""
 	local geoip_path="${V2RAY_LOCATION_ASSET%*/}/geoip.dat"
-	[ -s "$geoip_path" ] || { echo ""; return 1; }
+	local bin="$(first_type $(config_t_get global_app geoview_file) geoview)"
+	[ -n "$bin" ] && [ -s "$geoip_path" ] || { echo ""; return 1; }
 	case "$2" in
 		"ipv4") geoip_type_flag="-ipv6=false" ;;
 		"ipv6") geoip_type_flag="-ipv4=false" ;;
 	esac
-	if type geoview &> /dev/null; then
-		geoview -input "$geoip_path" -list "$geoip_code" $geoip_type_flag -lowmem=true
-		return 0
-	else
-		echo ""
-		return 1
-	fi
+	"$bin" -input "$geoip_path" -list "$geoip_code" $geoip_type_flag -lowmem=true
+	return 0
 }
 
 get_host_ip() {
@@ -163,7 +159,7 @@ parse_doh() {
 }
 
 host_from_url(){
-	local f=${1}
+	local f="${1}"
 
 	## Remove protocol part of url  ##
 	f="${f##http://}"
@@ -433,4 +429,15 @@ is_socks_wrap() {
 
 kill_all() {
 	kill -9 $(pidof "$@") >/dev/null 2>&1
+}
+
+get_subscribe_host(){
+	local line
+	uci show "${CONFIG}" | grep "=subscribe_list" | while read -r line; do
+		local section="$(echo "$line" | cut -d '.' -sf 2 | cut -d '=' -sf 1)"
+		local url="$(config_n_get $section url)"
+		[ -n "$url" ] || continue
+		url="$(host_from_url "$url")"
+		echo "$url"
+	done
 }

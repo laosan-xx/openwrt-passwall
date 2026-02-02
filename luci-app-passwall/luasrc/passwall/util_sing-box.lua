@@ -43,12 +43,13 @@ function geo_convert_srs(var)
 	if check_geoview() ~= 1 then
 		return
 	end
-	local geo_path = var["-geo_path"]
-	local prefix = var["-prefix"]
-	local rule_name = var["-rule_name"]
+	local geo_path = var["geo_path"]
+	local prefix = var["prefix"]
+	local rule_name = var["rule_name"]
 	local output_srs_file = GEO_VAR.TO_SRS_PATH .. prefix .. "-" .. rule_name .. ".srs"
 	if not fs.access(output_srs_file) then
-		local cmd = string.format("geoview -type %s -action convert -input '%s' -list '%s' -output '%s' -lowmem=true",
+		local bin = api.get_app_path("geoview")
+		local cmd = string.format(bin .. " -type %s -action convert -input '%s' -list '%s' -output '%s' -lowmem=true",
 			prefix, geo_path, rule_name, output_srs_file)
 		sys.call(cmd)
 		local status = fs.access(output_srs_file) and "success." or "failed!"
@@ -72,7 +73,7 @@ local function convert_geofile()
 				sys.call("rm -rf " .. GEO_VAR.TO_SRS_PATH .. prefix .. "-*.srs" )
 			end
 			for k in pairs(tags) do
-				geo_convert_srs({["-geo_path"] = file_path, ["-prefix"] = prefix, ["-rule_name"] = k})
+				geo_convert_srs({["geo_path"] = file_path, ["prefix"] = prefix, ["rule_name"] = k})
 			end
 		end
 	end
@@ -892,42 +893,42 @@ function gen_config_server(node)
 end
 
 function gen_config(var)
-	local flag = var["-flag"]
-	local log = var["-log"] or "0"
-	local loglevel = var["-loglevel"] or "warn"
-	local logfile = var["-logfile"] or "/dev/null"
-	local node_id = var["-node"]
-	local server_host = var["-server_host"]
-	local server_port = var["-server_port"]
-	local tcp_proxy_way = var["-tcp_proxy_way"]
-	local tcp_redir_port = var["-tcp_redir_port"]
-	local udp_redir_port = var["-udp_redir_port"]
-	local local_socks_address = var["-local_socks_address"] or "0.0.0.0"
-	local local_socks_port = var["-local_socks_port"]
-	local local_socks_username = var["-local_socks_username"]
-	local local_socks_password = var["-local_socks_password"]
-	local local_http_address = var["-local_http_address"] or "0.0.0.0"
-	local local_http_port = var["-local_http_port"]
-	local local_http_username = var["-local_http_username"]
-	local local_http_password = var["-local_http_password"]
-	local dns_listen_port = var["-dns_listen_port"]
-	local direct_dns_port = var["-direct_dns_port"]
-	local direct_dns_udp_server = var["-direct_dns_udp_server"]
-	local direct_dns_tcp_server = var["-direct_dns_tcp_server"]
-	local direct_dns_query_strategy = var["-direct_dns_query_strategy"]
-	local remote_dns_server = var["-remote_dns_server"]
-	local remote_dns_port = var["-remote_dns_port"]
-	local remote_dns_udp_server = var["-remote_dns_udp_server"]
-	local remote_dns_tcp_server = var["-remote_dns_tcp_server"]
-	local remote_dns_doh_url = var["-remote_dns_doh_url"]
-	local remote_dns_doh_host = var["-remote_dns_doh_host"]
-	local remote_dns_client_ip = var["-remote_dns_client_ip"]
-	local remote_dns_query_strategy = var["-remote_dns_query_strategy"]
-	local remote_dns_fake = var["-remote_dns_fake"]
-	local dns_cache = var["-dns_cache"]
-	local dns_socks_address = var["-dns_socks_address"]
-	local dns_socks_port = var["-dns_socks_port"]
-	local no_run = var["-no_run"]
+	local flag = var["flag"]
+	local log = var["log"] or "0"
+	local loglevel = var["loglevel"] or "warn"
+	local logfile = var["logfile"] or "/dev/null"
+	local node_id = var["node"]
+	local server_host = var["server_host"]
+	local server_port = var["server_port"]
+	local tcp_proxy_way = var["tcp_proxy_way"]
+	local tcp_redir_port = var["tcp_redir_port"]
+	local udp_redir_port = var["udp_redir_port"]
+	local local_socks_address = var["local_socks_address"] or "0.0.0.0"
+	local local_socks_port = var["local_socks_port"]
+	local local_socks_username = var["local_socks_username"]
+	local local_socks_password = var["local_socks_password"]
+	local local_http_address = var["local_http_address"] or "0.0.0.0"
+	local local_http_port = var["local_http_port"]
+	local local_http_username = var["local_http_username"]
+	local local_http_password = var["local_http_password"]
+	local dns_listen_port = var["dns_listen_port"]
+	local direct_dns_port = var["direct_dns_port"]
+	local direct_dns_udp_server = var["direct_dns_udp_server"]
+	local direct_dns_tcp_server = var["direct_dns_tcp_server"]
+	local direct_dns_query_strategy = var["direct_dns_query_strategy"]
+	local remote_dns_server = var["remote_dns_server"]
+	local remote_dns_port = var["remote_dns_port"]
+	local remote_dns_udp_server = var["remote_dns_udp_server"]
+	local remote_dns_tcp_server = var["remote_dns_tcp_server"]
+	local remote_dns_doh_url = var["remote_dns_doh_url"]
+	local remote_dns_doh_host = var["remote_dns_doh_host"]
+	local remote_dns_client_ip = var["remote_dns_client_ip"]
+	local remote_dns_query_strategy = var["remote_dns_query_strategy"]
+	local remote_dns_fake = var["remote_dns_fake"]
+	local dns_cache = var["dns_cache"]
+	local dns_socks_address = var["dns_socks_address"]
+	local dns_socks_port = var["dns_socks_port"]
+	local no_run = var["no_run"]
 
 	local dns_domain_rules = {}
 	local dns = nil
@@ -1216,6 +1217,8 @@ function gen_config(var)
 			local preproxy_tag = preproxy_rule_name
 			local preproxy_node_id = preproxy_rule_name and node["main_node"] or nil
 
+			inner_fakedns = node.fakedns or "0"
+
 			local function gen_shunt_node(rule_name, _node_id)
 				if not rule_name then return nil, nil end
 				if not _node_id then _node_id = node[rule_name] end
@@ -1406,6 +1409,8 @@ function gen_config(var)
 						if is_private or #source_ip_cidr > 0 then rule.rule_set_ip_cidr_match_source = true end
 					end
 
+					--[[
+					-- Too low usage rate, hidden
 					if e.sourcePort then
 						local source_port = {}
 						local source_port_range = {}
@@ -1419,6 +1424,7 @@ function gen_config(var)
 						rule.source_port = #source_port > 0 and source_port or nil
 						rule.source_port_range = #source_port_range > 0 and source_port_range or nil
 					end
+					]]--
 
 					if e.port then
 						local port = {}
@@ -1444,6 +1450,7 @@ function gen_config(var)
 							domain_keyword = {},
 							domain_regex = {},
 							rule_set = {},
+							fakedns = nil,
 							invert = e.invert == "1" and true or nil
 						}
 						string.gsub(e.domain_list, '[^' .. "\r\n" .. ']+', function(w)
@@ -1479,6 +1486,10 @@ function gen_config(var)
 						rule.domain_suffix = #domain_table.domain_suffix > 0 and domain_table.domain_suffix or nil
 						rule.domain_keyword = #domain_table.domain_keyword > 0 and domain_table.domain_keyword or nil
 						rule.domain_regex = #domain_table.domain_regex > 0 and domain_table.domain_regex or nil
+						rule.rule_set = #domain_table.rule_set > 0 and domain_table.rule_set or nil
+						if inner_fakedns == "1" and node[e[".name"] .. "_fakedns"] == "1" then
+							domain_table.fakedns = true
+						end
 
 						if outboundTag then
 							table.insert(dns_domain_rules, api.clone(domain_table))
@@ -1630,7 +1641,7 @@ function gen_config(var)
 				table.insert(dns.servers, remote_server)
 			end
 
-			if remote_dns_fake then
+			if remote_dns_fake or inner_fakedns == "1" then
 				dns.fakeip = {
 					enabled = true,
 					inet4_range = "198.18.0.0/15",
@@ -1696,7 +1707,7 @@ function gen_config(var)
 				table.insert(dns.servers, remote_server)
 			end
 
-			if remote_dns_fake then		
+			if remote_dns_fake or inner_fakedns == "1" then		
 				table.insert(dns.servers, {
 					tag = fakedns_tag,
 					type = "fakeip",
@@ -1838,7 +1849,7 @@ function gen_config(var)
 							table.insert(dns.servers, remote_shunt_server)
 							dns_rule.server = remote_shunt_server.tag
 						end
-						if remote_dns_fake then
+						if value.fakedns then
 							local fakedns_dns_rule = api.clone(dns_rule)
 							fakedns_dns_rule.query_type = {
 								"A", "AAAA"
@@ -2040,19 +2051,19 @@ function gen_config(var)
 end
 
 function gen_proto_config(var)
-	local local_socks_address = var["-local_socks_address"] or "0.0.0.0"
-	local local_socks_port = var["-local_socks_port"]
-	local local_socks_username = var["-local_socks_username"]
-	local local_socks_password = var["-local_socks_password"]
-	local local_http_address = var["-local_http_address"] or "0.0.0.0"
-	local local_http_port = var["-local_http_port"]
-	local local_http_username = var["-local_http_username"]
-	local local_http_password = var["-local_http_password"]
-	local server_proto = var["-server_proto"]
-	local server_address = var["-server_address"]
-	local server_port = var["-server_port"]
-	local server_username = var["-server_username"]
-	local server_password = var["-server_password"]
+	local local_socks_address = var["local_socks_address"] or "0.0.0.0"
+	local local_socks_port = var["local_socks_port"]
+	local local_socks_username = var["local_socks_username"]
+	local local_socks_password = var["local_socks_password"]
+	local local_http_address = var["local_http_address"] or "0.0.0.0"
+	local local_http_port = var["local_http_port"]
+	local local_http_username = var["local_http_username"]
+	local local_http_password = var["local_http_password"]
+	local server_proto = var["server_proto"]
+	local server_address = var["server_address"]
+	local server_port = var["server_port"]
+	local server_username = var["server_username"]
+	local server_password = var["server_password"]
 
 	local inbounds = {}
 	local outbounds = {}
@@ -2125,7 +2136,11 @@ _G.geo_convert_srs = geo_convert_srs
 if arg[1] then
 	local func =_G[arg[1]]
 	if func then
-		print(func(api.get_function_args(arg)))
+		local var = nil
+		if arg[2] then
+			var = jsonc.parse(arg[2])
+		end
+		print(func(var))
 		if (next(GEO_VAR.SITE_TAGS) or next(GEO_VAR.IP_TAGS)) and not no_run then
 			convert_geofile()
 		end
