@@ -220,7 +220,7 @@ o.value = "1"
 o:depends({ tcp_node = "",  ['!reverse'] = true })
 
 o = s:option(ListValue, "udp_node", "<a style='color: red'>" .. translate("UDP Node") .. "</a>")
-o.default = ""
+o.default = "tcp"
 o:value("", translate("Close"))
 o:value("tcp", translate("Same as the tcp node"))
 o:depends({ _tcp_node_bool = "1", _node_sel_other = "1" })
@@ -504,7 +504,7 @@ o:depends({dns_mode = "sing-box"})
 o:depends({dns_mode = "xray"})
 
 o = s:option(ListValue, "chinadns_ng_default_tag", translate("Default DNS"))
-o.default = "none"
+o.default = "gfw"
 o:value("gfw", translate("Remote DNS"))
 o:value("chn", translate("Direct DNS"))
 o:value("none", translate("Smart, Do not accept no-ip reply from Direct DNS"))
