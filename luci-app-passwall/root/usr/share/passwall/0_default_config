@@ -4,6 +4,7 @@ config global
 	option socks_enabled '0'
 	option tcp_node_socks_port '1070'
 	option filter_proxy_ipv6 '1'
+	option udp_node 'tcp'
 	option dns_shunt 'chinadns-ng'
 	option dns_mode 'tcp'
 	option remote_dns '8.8.8.8'
