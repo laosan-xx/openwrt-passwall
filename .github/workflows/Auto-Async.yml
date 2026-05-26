@@ -20,6 +20,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2.3.5
       - name: Merge upstream
+        id: merge
         env:
           PAT_SYNC: ${{ secrets.PAT_SYNC }}
         run: |
@@ -34,3 +35,21 @@ jobs:
           # 使用 PAT 替换远程地址，这样可以更新 workflow 文件
           git remote set-url origin https://x-access-token:${PAT_SYNC}@github.com/${GITHUB_REPOSITORY}.git
           git push origin main
+      
+      - name: Send Telegram Notification on Failure
+        if: ${{ failure() }}
+        uses: appleboy/telegram-action@master
+        with:
+          to: ${{ secrets.TELEGRAM_TO }}
+          token: ${{ secrets.TELEGRAM_TOKEN }}
+          format: markdown
+          message: |
+            ⚠️ *[passwall]Git Merge 失败通知*
+            
+            - 仓库: ${{ github.repository }}
+            - 工作流: ${{ github.workflow }}
+            - 运行号: ${{ github.run_number }}
+            - 提交: ${{ github.sha }}
+            - 触发者: ${{ github.actor }}
+            
+            [查看运行详情](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
