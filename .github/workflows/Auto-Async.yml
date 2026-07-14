@@ -41,10 +41,12 @@ jobs:
           git config --global user.name 'laosan-xx'
           git config --global user.email 'xxhy1989@gmail.com'
           git pull --unshallow
-          git remote add upstream https://github.com/Openwrt-Passwall/openwrt-passwall.git
+          git remote add upstream https://github.com/Openwrt-Passwall/openwrt-passwall.git 2>/dev/null || true
           git fetch upstream
           git checkout main
-          git merge --no-edit upstream/main
+          
+          # 尝试合并，使用上游分支优先解决冲突
+          git merge --no-edit -X theirs upstream/main
 
           # 使用 PAT 替换远程地址，这样可以更新 workflow 文件
           git remote set-url origin https://x-access-token:${PAT_SYNC}@github.com/${GITHUB_REPOSITORY}.git
