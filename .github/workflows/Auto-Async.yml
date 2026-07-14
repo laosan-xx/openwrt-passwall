@@ -4,8 +4,8 @@ on:
   push:
   workflow_dispatch:
   schedule:
-    #自动同步：每天早上1点
-    - cron:  50 16 * * *
+    #自动同步：每4小时一次
+    - cron:  50 */4 * * *
   watch:
     types: [started]
 
