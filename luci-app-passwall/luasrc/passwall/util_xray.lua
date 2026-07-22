@@ -1069,7 +1069,7 @@ function gen_config(var)
 				end
 				-- Check if balancing node duplicates fallback node
 				if _node.fallback_node == blc_node_id then
-					valid_fallback = false
+					_node.fallback_node = nil
 				end
 			end
 			if #valid_nodes == 0 then return nil end
